@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Tracker Unit & Manpower v4</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#121212',
+                        cardBg: '#1e1e1e',
+                        primary: '#f59e0b',
+                        accent: '#10b981',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .input-clean {
+            background: #121212;
+            border: 1px solid #374151;
+            color: #f3f4f6;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem;
+        }
+        .input-clean:focus {
+            border-color: #f59e0b;
+            outline: none;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+        datalist {
+            background-color: #1e1e1e;
+            color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-darkBg text-gray-200 font-sans antialiased min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 bg-cardBg p-4 rounded-xl border border-gray-800 shadow-md">
+            <div class="flex items-center space-x-3 mb-2 sm:mb-0">
+                <div class="w-3 h-3 bg-accent rounded-full animate-pulse"></div>
+                <span class="text-sm text-gray-400 font-medium">Sistem Berjalan Aktif</span>
+            </div>
+            <div class="text-sm md:text-base font-semibold text-gray-300" id="live-clock">
+                Memuat waktu...
+            </div>
+        </div>
+
+        <header class="bg-cardBg rounded-2xl p-6 shadow-lg border border-gray-800 mb-6">
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-gray-800 pb-4">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center"><i class="fa-solid fa-helmet-safety text-primary mr-3"></i>Check Unit & Operator</h1>
+                        <p class="text-gray-400 text-sm mt-1">Sistem Terintegrasi Pemantauan Awal & Akhir Shift</p>
+                    </div>
+                    <div class="mt-4 md:mt-0">
+                        <button onclick="resetSemuaData()" class="bg-gray-800 hover:bg-danger/20 hover:text-danger hover:border-danger text-gray-400 font-semibold px-4 py-2 rounded-xl text-xs transition-all border border-gray-700">
+                            <i class="fa-solid fa-trash-can mr-2"></i> Reset Semua Data Perangkat
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 bg-darkBg p-4 rounded-xl border border-gray-800">
+                    <div>
+                        <label class="block text-[10px] text-primary font-bold mb-1 uppercase tracking-wider">Area</label>
+                        <input type="text" id="info-area" class="w-full input-clean text-xs font-semibold" oninput="saveInfoData()" placeholder="Line 2 Selatan">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-primary font-bold mb-1 uppercase tracking-wider">Shift</label>
+                        <select id="info-shift" class="w-full input-clean text-xs font-semibold bg-darkBg" onchange="saveInfoData()">
+                            <option value="Day Shift">Day Shift (Siang)</option>
+                            <option value="Night Shift">Night Shift (Malam)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-primary font-bold mb-1 uppercase tracking-wider">Tanggal</label>
+                        <input type="date" id="info-tanggal" class="w-full input-clean text-xs font-semibold" onchange="saveInfoData()">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-500 font-bold mb-1 uppercase tracking-wider">SPV</label>
+                        <input type="text" id="staff-spv" class="w-full input-clean text-xs font-semibold" oninput="saveInfoData()" placeholder="Nama SPV...">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-500 font-bold mb-1 uppercase tracking-wider">Pengawas</label>
+                        <input type="text" id="staff-pengawas" class="w-full input-clean text-xs font-semibold" oninput="saveInfoData()" placeholder="Nama Pengawas...">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-500 font-bold mb-1 uppercase tracking-wider">Checker</label>
+                        <input type="text" id="staff-checker" class="w-full input-clean text-xs font-semibold text-primary" oninput="saveInfoData()" placeholder="Nama Checker...">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex bg-cardBg border border-gray-800 p-1.5 rounded-xl gap-2 mb-6 shadow-md">
+            <button id="tab-awal" onclick="switchMenu('awal')" class="flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 bg-primary text-black">
+                <i class="fa-solid fa-play text-xs"></i> 1. Menu Awal Shift
+            </button>
+            <button id="tab-akhir" onclick="switchMenu('akhir')" class="flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-800">
+                <i class="fa-solid fa-flag-checkered text-xs"></i> 2. Menu Akhir Shift
+            </button>
+            <button id="tab-rekap" onclick="switchMenu('rekap')" class="flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-800">
+                <i class="fa-solid fa-square-poll-horizontal text-xs"></i> 3. Ringkasan Laporan
+            </button>
+        </div>
+
+        <div id="page-awal" class="space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-900/50 p-4 rounded-xl border border-gray-800 gap-4">
+                <p class="text-xs text-gray-400 flex-1"><i class="fa-solid fa-circle-info text-primary mr-1"></i> Daftarkan unit dan ceklis kehadiran operator di sini sebelum shift dimulai. Sistem menggunakan kategori alat yang sudah dipatenkan.</p>
+                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                    <button onclick="kirimKeWA()" class="flex-1 sm:flex-initial bg-[#25D366] hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-all flex items-center justify-center shadow-lg border border-green-700">
+                        <i class="fa-brands fa-whatsapp text-lg mr-2"></i> Kirim ke WA
+                    </button>
+                    <button id="btn-sinkron" onclick="kirimKeGoogleSheets()" class="flex-1 sm:flex-initial bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition-all flex items-center justify-center shadow-lg border border-blue-700">
+                        <i class="fa-solid fa-cloud-arrow-up text-lg mr-2"></i> Simpan ke Database
+                    </button>
+                </div>
+            </div>
+            <div id="unit-container-awal" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </div>
+
+        <div id="page-akhir" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-900/50 p-4 rounded-xl border border-gray-800 gap-4">
+                <p class="text-xs text-gray-400 flex-1"><i class="fa-solid fa-circle-info text-primary mr-1"></i> Tentukan status akhir unit saat shift selesai. Jika unit rusak, klik tombol <strong>BREAKDOWN</strong> dan isi keterangannya.</p>
+                <button onclick="kirimKeWAAkhir()" class="w-full sm:w-auto bg-[#25D366] hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-all flex items-center justify-center shadow-lg border border-green-700">
+                    <i class="fa-brands fa-whatsapp text-lg mr-2"></i> Kirim Report Akhir
+                </button>
+            </div>
+            <div id="unit-container-akhir" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </div>
+
+        <div id="page-rekap" class="hidden space-y-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-cardBg p-5 rounded-2xl border border-gray-800 shadow-md">
+                    <span class="block text-xs text-gray-500 font-bold uppercase">Total Armada</span>
+                    <span class="text-3xl font-mono font-bold text-white mt-1 block" id="stat-total">0</span>
+                </div>
+                <div class="bg-cardBg p-5 rounded-2xl border border-gray-800 shadow-md">
+                    <span class="block text-xs text-accent font-bold uppercase">Unit Ready</span>
+                    <span class="text-3xl font-mono font-bold text-accent mt-1 block" id="stat-ready">0</span>
+                </div>
+                <div class="bg-cardBg p-5 rounded-2xl border border-gray-800 shadow-md">
+                    <span class="block text-xs text-danger font-bold uppercase">Unit Breakdown</span>
+                    <span class="text-3xl font-mono font-bold text-danger mt-1 block" id="stat-bd">0</span>
+                </div>
+                <div class="bg-cardBg p-5 rounded-2xl border border-gray-800 shadow-md">
+                    <span class="block text-xs text-primary font-bold uppercase">Kesiapan Operasional</span>
+                    <span class="text-3xl font-mono font-bold text-primary mt-1 block" id="stat-persen">0%</span>
+                </div>
+            </div>
+
+            <div class="bg-cardBg border border-gray-800 rounded-2xl p-6 shadow-lg">
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center text-danger"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Daftar Unit Breakdown (Butuh Perbaikan)</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-darkBg text-gray-400 text-xs uppercase tracking-wider">
+                            <tr>
+                                <th class="p-3 rounded-l-lg">Jenis Alat</th>
+                                <th class="p-3">Kode Unit</th>
+                                <th class="p-3">Operator</th>
+                                <th class="p-3 rounded-r-lg text-danger">Keterangan Masalah / Kerusakan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-bd-body" class="divide-y divide-gray-800"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const operatorDB = {
+            "Exca": ["Bahtiar Pasimanyeku", "Sulaiman", "Irwan Nupu", "Haeruddin", "Glorian Rifaldo Titalouw", "Nirwan A Rauf", "Muh. Patnan", "Mahfud Anwar", "Muhammad Jihad Iskandar", "Dony Setiawan", "Arfan Ajis Ino", "Taufik", "Andi Aldin Alpais", "Hilman Prajuli", "La Masrudin La Hebe", "M. Abdulhalik Judin", "Hariadi Siahaan", "Moh C hendri  Makalalag", "Fauzan Sialana", "Samsul Bahri Hanafi", "Muhamad Rois", "Muh.Pazli", "Aris Pratama", "Idrus Nupu", "Alwin Raybi Manus", "Mohamad Anwar", "Delvan Siang", "Rio", "Rizky Suhardi", "Alfaritzi  Rajalang", "Dwi Kristanto", "Riyo Krisno Putra Rayo", "Juprianus Arruan Banga", "Nofa", "Arsan", "Sarman (1)", "Afrizal", "Mohamand Cl. Damopolii", "Harnis Yunus", "Alvian A. Jamrud", "Andre Budi Santoso", "Hun Salindeho", "Nanung Sugiarto", "Syahrul Salamat", "Aditya Triagustian Harahap", "Joni Sari Bunga", "Merky Undap", "Rinaldi"],
+            "Dozer": ["Alfian M arsyad", "Didik Rahmadi", "Markus Panggayu", "Dearly Sidigol", "Fredik Baceran", "Asropi", "Jumrih", "Arfan Man", "Samuel Rein Ngama", "Muhamat Lukti Kuncoro", "Riswanto Muhammad Ismu", "Verderycho Johanis Katiandagho", "Fristawanli Woyang", "Christian Fernando Iriando M", "Dodi Batloloni", "Rogatama Rumahorbo", "Roni Tiboya", "Yusril Kaunar", "Sultan Aulia Pays", "Irianto", "Mario Supit", "Dominggus Embuai", "Redy Leloltery", "Sattu", "Bakkulla", "Beny Wawo", "Steven G. Matubun", "Efendi Hartanto", "Yulius Randa Kareba", "Tri Simon Nugroho Seko", "Andika (2)", "Teven Salamba", "Hanis Yunus", "Elo Sulo", "Supardi Alim", "Syamsu Rijal", "La Musiadi La Jafar", "Hirman Saenudin", "Hidayat Akbar Haning", "Sabtian Oktora Agustinus"],
+            "Compac": ["Rasdan Ode Ratif", "Adam Yunianto", "Alfinus Katiandago", "Pajar", "Abrar", "Awiyanto", "Margi D Huwae", "Risaldi Soamole", "Ahsinil Umam", "Syarifuddin"],
+            "HDT-HO": ["Mhd Sori Alamsyah Harahap", "Zulkifli Rusli", "Abdilah Abd Kadir", "Andrianus Samulia", "Try Wahyudi Suparto Kemhay", "Faisal Hi Yusup", "Hairun Gorontalo", "Eka Apriyanto", "Dewendi Desen Sombolayuk", "Mukhlis Tuloli", "Dedi Tri Haryono", "Mirdad", "Rifail", "Ferdiansyah", "Imran Aras", "Edy Mahmudar Haera", "Muliyadi", "Faisal S. Kamaruddin, SE", "Rivon Gumabo", "Supantri Patingki", "Rivaldo Ravicky Jandy", "Ervianus", "Virianto Andrew Jofrans Mumu", "David  Rian Palimbong", "Ardian Sande", "Lobo Sanda Gallang", "Ikran Jaya", "Denis Tenor Paba'na", "Mustakim", "Edi Kurniawan Haera", "Denny Pansariang", "Hari Romli", "Reza", "Abdul Rahman", "Arrasid Pattiekon", "Deri N Tomahir", "Subarmin Tandiono", "Mustapa", "Agustian Manoppo", "Andi", "Muhammad Saiful", "Yoga Angkara", "Leksi Rattin", "Mumammad Amin", "Asrul Syha", "Ramli NR", "Hendra Darui", "Ikbal", "Arwan", "Rudi Ridwan Kurdi", "Lucky A Bawia", "Hariyanto Rinto Lelemboto", "Santo Hi Anhar", "Abdjan A.Lagana", "Ta' eto", "Ali Hanafi Anjarang", "Roy (1)", "Jonatan Fatan Atilida", "Advend Sipehelut", "Ramly Tangesau", "Novianus E.Tontong", "Sanji Alfin Gunawan", "Syamsul", "Stevi Legi"]
+        };
+
+        const unitDB = {
+            "Exca": ["HLX-SA2-01", "HLX-SA2-02", "HX-SA2-22", "HX-SA2-24", "HX-SA2-25", "HX-SA2-26", "HX-SA2-27", "HX-SA2-28", "HX-SA2-29", "HX-XC2-30", "HX-XC2-31", "HX-XC2-32", "HX-XC2-34", "HX-SA3-21", "HX-SA3-23", "HX-SA3-24", "HX-XC3-25", "HX-XC3-26", "HX-XC3-27", "HX-SA3-28", "HX-SA3-29", "OX-SA3-004", "OX-SA3-008", "HX-SA2-38", "HX-SA3-08"],
+            "Dozer": ["HD-SH1-05", "HD-SH1-07", "HD-SH1-08", "HD-SH1-09", "HD-SH1-10", "HD-SH1-11", "HD-SH1-12", "HD-SH1-13", "HD-SH1-14", "HD-SH1-15", "HD-SH1-16", "HD-SH1-17", "HD-SH1-18", "HD-SH1-19", "HD-SH1-20", "HD-SH1-21", "HD-SH1-22", "HD-SH1-23", "HD-SH1-25", "HD-SH1-26", "HD-SH2-09", "OD1-001", "OD1-002", "OD1-003", "OD1-004", "OD1-005"],
+            "Compac": ["HC-XC-10", "HC-XC-12", "HC-XC-13", "HC-XC-14", "HC-XC-15", "HC-XC-16"],
+            "HDT-HO": ["HDT-HO-53", "HDT-HO-54", "HDT-HO-55", "HDT-HO-56", "HDT-HO-57", "HDT-HO-77", "HDT-HO-78", "HDT-HO-79", "HDT-HO-80", "HDT-HO-81", "HDT-HO-82", "HDT-HO-83", "HDT-HO-84", "HDT-HO-85", "HDT-HO-86", "HDT-HO-87", "HDT-HO-88", "HDT-HO-89", "HDT-HO-90", "HDT-HO-91", "HDT-HO-92", "HDT-HO-93", "HDT-HO-94", "HDT-HO-95", "HDT-HO-96", "HDT-HO-97", "HDT-HO-98", "HDT-HO-99", "HDT-HO-100", "HDT-HO-101"]
+        };
+
+        const patenCategories = ["Exca", "Dozer", "Compac", "HDT-HO"];
+        const defaultData = [
+            { kategori: "Exca", keterangan: "Loading & Lipat Drytail", unit: [] },
+            { kategori: "Dozer", keterangan: "Dozing Drytail", unit: [] },
+            { kategori: "Compac", keterangan: "Compacting", unit: [] },
+            { kategori: "HDT-HO", keterangan: "Hauling Drytail", unit: [] }
+        ];
+
+        const defaultInfo = {
+            area: "Line 2 Selatan", shift: "Day Shift", tanggal: new Date().toISOString().split('T')[0],
+            spv: "", pengawas: "", checker: ""
+        };
+
+        let dataLapang = [];
+
+        function initDatalists() {
+            let html = '';
+            for (const [kategori, operators] of Object.entries(operatorDB)) {
+                html += `<datalist id="ops-${kategori}">`;
+                operators.forEach(op => html += `<option value="${op}">`);
+                html += `</datalist>`;
+            }
+            for (const [kategori, units] of Object.entries(unitDB)) {
+                html += `<datalist id="units-${kategori}">`;
+                units.forEach(unit => html += `<option value="${unit}">`);
+                html += `</datalist>`;
+            }
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+
+        function initClock() {
+            setInterval(() => {
+                const now = new Date();
+                const opsi = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+                const tanggal = now.toLocaleDateString('id-ID', opsi);
+                const waktu = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                document.getElementById('live-clock').innerHTML = `<i class="fa-regular fa-clock text-primary mr-2"></i> ${tanggal} — <span class="text-primary font-mono font-bold">${waktu} WITA</span>`;
+            }, 1000);
+        }
+
+        function switchMenu(menu) {
+            document.getElementById('page-awal').classList.add('hidden');
+            document.getElementById('page-akhir').classList.add('hidden');
+            document.getElementById('page-rekap').classList.add('hidden');
+            
+            document.getElementById('tab-awal').className = "flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-800";
+            document.getElementById('tab-akhir').className = "flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-800";
+            document.getElementById('tab-rekap').className = "flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-800";
+
+            if(menu === 'awal') {
+                document.getElementById('page-awal').classList.remove('hidden');
+                document.getElementById('tab-awal').classList.add('bg-primary', 'text-black');
+            } else if(menu === 'akhir') {
+                document.getElementById('page-akhir').classList.remove('hidden');
+                document.getElementById('tab-akhir').classList.add('bg-primary', 'text-black');
+                renderAkhirShift();
+            } else if(menu === 'rekap') {
+                document.getElementById('page-rekap').classList.remove('hidden');
+                document.getElementById('tab-rekap').classList.add('bg-primary', 'text-black');
+                hitungRekapitulasi();
+            }
+        }
+
+        function loadSavedData() {
+            const savedData = localStorage.getItem('v4_prod_data');
+            const savedInfo = localStorage.getItem('v4_prod_info');
+            const info = savedInfo ? JSON.parse(savedInfo) : defaultInfo;
+
+            if (savedData) {
+                let parsed = JSON.parse(savedData);
+                dataLapang = patenCategories.map((name, idx) => {
+                    const existing = parsed.find(c => c.kategori === name);
+                    return existing ? existing : JSON.parse(JSON.stringify(defaultData[idx]));
+                });
+            } else {
+                dataLapang = JSON.parse(JSON.stringify(defaultData));
+            }
+
+            document.getElementById('info-area').value = info.area || '';
+            document.getElementById('info-shift').value = info.shift || 'Day Shift';
+            document.getElementById('info-tanggal').value = info.tanggal || new Date().toISOString().split('T')[0];
+            document.getElementById('staff-spv').value = info.spv || '';
+            document.getElementById('staff-pengawas').value = info.pengawas || '';
+            document.getElementById('staff-checker').value = info.checker || '';
+
+            renderAwalShift();
+        }
+
+        function saveInfoData() {
+            const info = {
+                area: document.getElementById('info-area').value,
+                shift: document.getElementById('info-shift').value,
+                tanggal: document.getElementById('info-tanggal').value,
+                spv: document.getElementById('staff-spv').value,
+                pengawas: document.getElementById('staff-pengawas').value,
+                checker: document.getElementById('staff-checker').value
+            };
+            localStorage.setItem('v4_prod_info', JSON.stringify(info));
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('v4_prod_data', JSON.stringify(dataLapang));
+        }
+
+        function renderAwalShift() {
+            const container = document.getElementById('unit-container-awal');
+            container.innerHTML = '';
+
+            dataLapang.forEach((catData, catIdx) => {
+                const totalUnit = catData.unit.length;
+                const checkedUnit = catData.unit.filter(u => u.checked).length;
+
+                let cardHTML = `
+                    <div class="bg-cardBg rounded-2xl p-5 border border-gray-800 flex flex-col justify-between shadow-sm">
+                        <div>
+                            <div class="flex justify-between items-start mb-3 border-b border-gray-800 pb-2">
+                                <div>
+                                    <h2 class="text-lg font-bold text-white">${catData.kategori} <span class="text-xs text-gray-500 font-mono">(${totalUnit})</span></h2>
+                                    <p class="text-[11px] text-primary">Ket: ${catData.keterangan}</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-[10px] font-semibold px-2 py-0.5 bg-darkBg text-gray-400 rounded-md border border-gray-800">${checkedUnit}/${totalUnit} Masuk</span>
+                                </div>
+                            </div>
+                            <ul class="space-y-2 mb-4">
+                `;
+
+                catData.unit.forEach((item, unitIdx) => {
+                    cardHTML += `
+                        <li class="flex items-center justify-between p-2 rounded-lg bg-darkBg/40 border border-transparent hover:border-gray-700/50">
+                            <div class="flex items-center flex-1 cursor-pointer" onclick="toggleCheck(${catIdx}, ${unitIdx})">
+                                <div class="w-4 h-4 mr-2.5 rounded border flex items-center justify-center transition-all ${item.checked ? 'border-primary bg-primary text-black' : 'border-gray-600'}">
+                                    ${item.checked ? '<i class="fa-solid fa-check text-[10px] font-bold"></i>' : ''}
+                                </div>
+                                <div>
+                                    <span class="block text-sm font-bold ${item.checked ? 'text-white' : 'text-gray-400'}">${item.id}</span>
+                                    <span class="block text-[11px] ${item.checked ? 'text-gray-300' : 'text-gray-500'}">${item.operator}</span>
+                                </div>
+                            </div>
+                            <button onclick="deleteUnit(${catIdx}, ${unitIdx})" class="text-gray-700 hover:text-danger p-1"><i class="fa-solid fa-xmark text-xs"></i></button>
+                        </li>
+                    `;
+                });
+
+                cardHTML += `
+                            </ul>
+                        </div>
+                        <div class="pt-3 border-t border-gray-800/60 grid grid-cols-2 gap-2">
+                            <input type="text" id="add-id-${catIdx}" placeholder="Ketik Kode Unit..." list="units-${catData.kategori}" autocomplete="off" class="input-clean text-xs w-full">
+                            <input type="text" id="add-op-${catIdx}" placeholder="Ketik Nama Op..." list="ops-${catData.kategori}" autocomplete="off" class="input-clean text-xs w-full">
+                            <button onclick="addUnit(${catIdx})" class="col-span-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-primary font-bold py-1.5 rounded-md text-[11px] transition-all">
+                                <i class="fa-solid fa-plus mr-1"></i> Tambah Armada
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        function renderAkhirShift() {
+            const container = document.getElementById('unit-container-akhir');
+            container.innerHTML = '';
+
+            dataLapang.forEach((catData, catIdx) => {
+                let cardHTML = `
+                    <div class="bg-cardBg rounded-2xl p-5 border border-gray-800 shadow-sm">
+                        <div class="mb-3 border-b border-gray-800 pb-2">
+                            <h2 class="text-lg font-bold text-white">${catData.kategori}</h2>
+                            <p class="text-[11px] text-gray-500">Status Akhir Operasi Shift</p>
+                        </div>
+                        <ul class="space-y-4">
+                `;
+
+                catData.unit.forEach((item, unitIdx) => {
+                    const isBD = item.statusAkhir === "BREAKDOWN";
+                    cardHTML += `
+                        <li class="bg-darkBg/60 p-3 rounded-xl border border-gray-800 flex flex-col gap-3">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="block font-bold text-sm text-white">${item.id}</span>
+                                    <span class="block text-xs text-gray-400">Op: ${item.operator}</span>
+                                </div>
+                                <div class="flex bg-gray-900 p-1 rounded-lg border border-gray-800 gap-1">
+                                    <button onclick="setStatusAkhir(${catIdx}, ${unitIdx}, 'READY')" class="px-3 py-1 rounded-md text-xs font-bold transition-all ${!isBD ? 'bg-accent text-white shadow' : 'text-gray-500 hover:text-gray-300'}">
+                                        READY
+                                    </button>
+                                    <button onclick="setStatusAkhir(${catIdx}, ${unitIdx}, 'BREAKDOWN')" class="px-3 py-1 rounded-md text-xs font-bold transition-all ${isBD ? 'bg-danger text-white shadow' : 'text-gray-500 hover:text-gray-300'}">
+                                        BD
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="${isBD ? 'block' : 'hidden'} animate-fade-in">
+                                <label class="block text-[10px] text-danger font-bold uppercase mb-1">Detail Masalah / Keluhan Mekanik:</label>
+                                <input type="text" value="${item.kendala || ''}" oninput="updateKendala(this.value, ${catIdx}, ${unitIdx})" placeholder="Contoh: Hose hydraulic bocor / Engine low power" class="w-full input-clean text-xs border-danger/30 placeholder-gray-600">
+                            </div>
+                        </li>
+                    `;
+                });
+
+                cardHTML += `</ul></div>`;
+                if(catData.unit.length > 0) container.innerHTML += cardHTML;
+            });
+            
+            if(container.innerHTML === '') {
+                container.innerHTML = '<div class="col-span-2 bg-cardBg border border-gray-800 rounded-xl p-8 text-center text-gray-500">Belum ada unit yang terdaftar di Menu Awal Shift.</div>';
+            }
+        }
+
+        function hitungRekapitulasi() {
+            let total = 0, ready = 0, bd = 0;
+            const tbody = document.getElementById('tabel-bd-body');
+            tbody.innerHTML = '';
+
+            dataLapang.forEach((catData) => {
+                catData.unit.forEach((item) => {
+                    total++;
+                    if(item.statusAkhir === "BREAKDOWN") {
+                        bd++;
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-gray-800/40">
+                                <td class="p-3 font-semibold text-white">${catData.kategori}</td>
+                                <td class="p-3 font-mono text-amber-400 font-bold">${item.id}</td>
+                                <td class="p-3 text-gray-300">${item.operator}</td>
+                                <td class="p-3 text-danger font-medium"><i class="fa-solid fa-screwdriver-wrench mr-2 text-xs"></i>${item.kendala || 'Tidak ada keterangan masalah'}</td>
+                            </tr>
+                        `;
+                    } else {
+                        ready++;
+                    }
+                });
+            });
+
+            const persen = total > 0 ? Math.round((ready / total) * 100) : 0;
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-ready').innerText = ready;
+            document.getElementById('stat-bd').innerText = bd;
+            document.getElementById('stat-persen').innerText = persen + "%";
+
+            if(bd === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-accent bg-accent/5 font-semibold"><i class="fa-solid fa-circle-check mr-2"></i>Semua armada beroperasi dengan aman dan lancar (0 Breakdown).</td></tr>`;
+            }
+        }
+
+        function formatTanggal(tglStr) {
+            if (!tglStr) return "-";
+            const date = new Date(tglStr);
+            if (isNaN(date.getTime())) return tglStr;
+            const bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            return `${date.getDate()} ${bulanIndo[date.getMonth()]} ${date.getFullYear()}`;
+        }
+
+        function kirimKeWA() {
+            const area = document.getElementById('info-area').value || '-';
+            let shiftRaw = document.getElementById('info-shift').value;
+            let shift = shiftRaw === 'Day Shift' ? 'Siang' : (shiftRaw === 'Night Shift' ? 'Malam' : shiftRaw);
+            const tanggal = document.getElementById('info-tanggal').value;
+            const tglFormatted = formatTanggal(tanggal);
+
+            let pesan = `*Report Unit & Operator*\n\n`;
+            pesan += `Area : ${area}\n`;
+            pesan += `Shift : ${shift}\n`;
+            pesan += `Tanggal : ${tglFormatted}\n\n`;
+
+            dataLapang.forEach(cat => {
+                if (cat.unit.length > 0) {
+                    let catName = cat.kategori === 'HDT-HO' ? 'HDT' : cat.kategori;
+                    pesan += `*${catName}* (${cat.unit.length})\n`;
+                    cat.unit.forEach(u => pesan += `• ${u.id} ${u.operator}\n`);
+                    pesan += `\nKet : ${cat.keterangan}\n\n`;
+                }
+            });
+
+            pesan = pesan.trim();
+            const encodedText = encodeURIComponent(pesan);
+            window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+        }
+
+        function kirimKeWAAkhir() {
+            const area = document.getElementById('info-area').value || '-';
+            let shiftRaw = document.getElementById('info-shift').value;
+            let shift = shiftRaw === 'Day Shift' ? 'Siang' : (shiftRaw === 'Night Shift' ? 'Malam' : shiftRaw);
+            const tanggal = document.getElementById('info-tanggal').value;
+            const tglFormatted = formatTanggal(tanggal);
+
+            let pesan = `*Report Unit Akhir Shift*\n\n`;
+            pesan += `Area : ${area}\n`;
+            pesan += `Shift : ${shift}\n`;
+            pesan += `Tanggal : ${tglFormatted}\n\n`;
+
+            dataLapang.forEach(cat => {
+                if (cat.unit.length > 0) {
+                    let catName = cat.kategori === 'HDT-HO' ? 'HDT' : cat.kategori;
+                    pesan += `*${catName}* (${cat.unit.length})\n`;
+                    
+                    cat.unit.forEach(u => {
+                        if (u.statusAkhir === "BREAKDOWN") {
+                            pesan += `• ${u.id} - BD (${u.kendala || 'Tanpa Keterangan'})\n`;
+                        } else {
+                            pesan += `• ${u.id} - READY\n`;
+                        }
+                    });
+                    pesan += `\n`;
+                }
+            });
+
+            pesan = pesan.trim();
+            const encodedText = encodeURIComponent(pesan);
+            window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+        }
+
+        function toggleCheck(catIdx, unitIdx) {
+            dataLapang[catIdx].unit[unitIdx].checked = !dataLapang[catIdx].unit[unitIdx].checked;
+            saveToStorage(); renderAwalShift();
+        }
+
+        function setStatusAkhir(catIdx, unitIdx, status) {
+            dataLapang[catIdx].unit[unitIdx].statusAkhir = status;
+            if(status === 'READY') dataLapang[catIdx].unit[unitIdx].kendala = '';
+            saveToStorage(); renderAkhirShift();
+        }
+
+        function updateKendala(value, catIdx, unitIdx) {
+            dataLapang[catIdx].unit[unitIdx].kendala = value;
+            saveToStorage();
+        }
+
+        function addUnit(catIdx) {
+            const idInput = document.getElementById(`add-id-${catIdx}`);
+            const opInput = document.getElementById(`add-op-${catIdx}`);
+            if (!idInput.value.trim()) return alert("Kode Unit wajib diisi!");
+
+            dataLapang[catIdx].unit.push({
+                id: idInput.value.trim().toUpperCase(),
+                operator: opInput.value.trim() || "Unknown",
+                checked: false, statusAkhir: "READY", kendala: ""
+            });
+
+            idInput.value = ''; opInput.value = '';
+            saveToStorage(); renderAwalShift();
+        }
+
+        function deleteUnit(catIdx, unitIdx) {
+            dataLapang[catIdx].unit.splice(unitIdx, 1);
+            saveToStorage(); renderAwalShift();
+        }
+
+        function resetSemuaData() {
+            if(confirm("PENTING: Langkah ini akan menghapus permanen semua list unit yang sudah Anda buat di browser ini dan kembali ke pengaturan awal. Lanjutkan?")) {
+                localStorage.removeItem('v4_prod_data');
+                window.location.reload();
+            }
+        }
+
+        document.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter' && e.target.id.startsWith('add-')) {
+                const idx = e.target.id.split('-')[2];
+                addUnit(parseInt(idx));
+            }
+        });
+
+        window.onload = function() {
+            initDatalists();
+            initClock();
+            loadSavedData();
+        };
+
+        // KONEKSI GOOGLE SHEETS API
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxC_gNvZyvg2HWvZ2-9VuIe22tbd1cfqsrU4_nE3Qa1upmCaviA9r8SbpHplSyFdHKPmQ/exec";
+
+        function kirimKeGoogleSheets() {
+            const area = document.getElementById('info-area').value || '-';
+            const shift = document.getElementById('info-shift').value;
+            const tanggal = document.getElementById('info-tanggal').value;
+            const spv = document.getElementById('staff-spv').value || '-';
+            const pengawas = document.getElementById('staff-pengawas').value || '-';
+            const checker = document.getElementById('staff-checker').value || '-';
+
+            let dataUntukDikirim = [];
+
+            dataLapang.forEach(cat => {
+                cat.unit.forEach(u => {
+                    dataUntukDikirim.push({
+                        tanggal: tanggal,
+                        area: area,
+                        shift: shift,
+                        spv: spv,
+                        pengawas: pengawas,
+                        checker: checker,
+                        kategori: cat.kategori,
+                        kode_unit: u.id,
+                        operator: u.operator,
+                        status_akhir: u.statusAkhir || 'READY',
+                        kendala: u.kendala || '-'
+                    });
+                });
+            });
+
+            if(dataUntukDikirim.length === 0) {
+                alert("Belum ada data unit untuk dikirim!");
+                return;
+            }
+
+            const btnSubmit = document.getElementById('btn-sinkron');
+            const originalText = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Mengirim...';
+            btnSubmit.disabled = true;
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(dataUntukDikirim)
+            })
+            .then(response => response.text())
+            .then(result => {
+                alert("Mantap! Data berhasil tersimpan ke sistem pusat (Google Sheets).");
+                btnSubmit.innerHTML = originalText;
+                btnSubmit.disabled = false;
+            })
+            .catch(error => {
+                alert("Gagal mengirim data. Pastikan koneksi internet stabil.");
+                console.error(error);
+                btnSubmit.innerHTML = originalText;
+                btnSubmit.disabled = false;
+            });
+        }
+    </script>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('PWA Service Worker Berhasil Didaftarkan!'))
+            .catch(err => console.error('Gagal mendaftarkan Service Worker:', err));
+        });
+      }
+    </script>
+</body>
+</html>
