@@ -1,7 +1,7 @@
 {
-  "name": "Sistem Tracker Unit & Manpower v4",
-  "short_name": "Tracker Unit",
-  "description": "Sistem Terintegrasi Pemantauan Awal & Akhir Shift",
+  "name": "Sistem Tracker Unit & Manpower v4 Pro",
+  "short_name": "Checker Pro",
+  "description": "Sistem Terintegrasi Pemantauan Awal, Akhir Shift & Ritase PWA",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#121212",
@@ -9,14 +9,16 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icon.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icon.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
