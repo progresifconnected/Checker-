@@ -1,4 +1,4 @@
-const CACHE_NAME = 'falk-tracker-v4-pro-cache-v1';
+const CACHE_NAME = 'falk-tracker-v4-pro-cache-v2';
 
 // Daftar file statis lokal yang wajib langsung di-cache saat instalasi
 const urlsToCache = [
