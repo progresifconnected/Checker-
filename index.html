@@ -78,7 +78,7 @@
         .swal2-title.swal-dark { color: #f3f4f6; }
     </style>
 </head>
-<body class="bg-darkBg text-gray-200 font-sans antialiased min-h-screen flex flex-col justify-between p-4 md:p-8">
+<body class="bg-darkBg text-gray-200 font-sans antialiased min-h-screen flex flex-col justify-between p-4 md:p-8 pb-24 md:pb-8">
 
     <div id="network-indicator" class="fixed top-4 right-4 z-50 flex items-center px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-all shadow-lg border">
         </div>
@@ -143,18 +143,19 @@
             </div>
         </header>
 
-        <div class="flex flex-col md:flex-row bg-cardBg border border-gray-800 p-1.5 rounded-xl gap-2 mb-6 shadow-md">
-            <button id="tab-awal" onclick="switchMenu('awal')" class="flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 bg-primary text-black">
-                <i class="fa-solid fa-play text-xs"></i> 1. Awal Shift
+        <!-- MENU NAVIGASI BAWAH (MOBILE APP STYLE) -->
+        <div class="fixed bottom-0 left-0 right-0 bg-cardBg border-t border-gray-800 p-2 flex flex-row justify-around shadow-2xl z-50 rounded-t-2xl md:relative md:bottom-auto md:left-auto md:right-auto md:bg-transparent md:border md:p-1.5 md:rounded-xl md:gap-2 md:mb-6 md:shadow-md md:rounded-t-xl">
+            <button id="tab-awal" onclick="switchMenu('awal')" class="flex-1 py-2 md:py-3 px-1 md:px-4 rounded-xl font-bold text-[11px] md:text-sm transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 bg-primary text-black">
+                <i class="fa-solid fa-play text-base md:text-xs"></i> Awal Shift
             </button>
-            <button id="tab-akhir" onclick="switchMenu('akhir')" class="flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-800">
-                <i class="fa-solid fa-flag-checkered text-xs"></i> 2. Akhir Shift
+            <button id="tab-akhir" onclick="switchMenu('akhir')" class="flex-1 py-2 md:py-3 px-1 md:px-4 rounded-xl font-bold text-[11px] md:text-sm transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 text-gray-400 hover:bg-gray-800/60">
+                <i class="fa-solid fa-flag-checkered text-base md:text-xs"></i> Akhir Shift
             </button>
-            <button id="tab-rekap" onclick="switchMenu('rekap')" class="flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-800">
-                <i class="fa-solid fa-square-poll-horizontal text-xs"></i> 3. Laporan
+            <button id="tab-rekap" onclick="switchMenu('rekap')" class="flex-1 py-2 md:py-3 px-1 md:px-4 rounded-xl font-bold text-[11px] md:text-sm transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 text-gray-400 hover:bg-gray-800/60">
+                <i class="fa-solid fa-square-poll-horizontal text-base md:text-xs"></i> Laporan
             </button>
-            <button id="tab-ritase" onclick="switchMenu('ritase')" class="flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-800">
-                <i class="fa-solid fa-stopwatch-20 text-xs"></i> 4. Ritase
+            <button id="tab-ritase" onclick="switchMenu('ritase')" class="flex-1 py-2 md:py-3 px-1 md:px-4 rounded-xl font-bold text-[11px] md:text-sm transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 text-gray-400 hover:bg-gray-800/60">
+                <i class="fa-solid fa-stopwatch-20 text-base md:text-xs"></i> Ritase
             </button>
         </div>
 
@@ -383,10 +384,13 @@
             document.getElementById('page-rekap').classList.add('hidden');
             document.getElementById('page-ritase').classList.add('hidden');
             
-            document.getElementById('tab-awal').className = "flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-800";
-            document.getElementById('tab-akhir').className = "flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-800";
-            document.getElementById('tab-rekap').className = "flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-800";
-            document.getElementById('tab-ritase').className = "flex-1 py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2 text-gray-400 hover:bg-gray-800";
+            // Base class disesuaikan dengan skema menu bawah responsif mobile
+            const baseClass = "flex-1 py-2 md:py-3 px-1 md:px-4 rounded-xl font-bold text-[11px] md:text-sm transition-all flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 text-gray-400 hover:bg-gray-800/60";
+            
+            document.getElementById('tab-awal').className = baseClass;
+            document.getElementById('tab-akhir').className = baseClass;
+            document.getElementById('tab-rekap').className = baseClass;
+            document.getElementById('tab-ritase').className = baseClass;
 
             if(menu === 'awal') {
                 document.getElementById('page-awal').classList.remove('hidden');
@@ -720,7 +724,6 @@
             }
 
             let isExist = false;
-            // Hanya cegah duplikasi jika bukan unit default "Belum Dapat Unit"
             if(codeInput !== "BELUM DAPAT UNIT") {
                 dataLapang.forEach(cat => {
                     if(cat.unit.some(u => u.id === codeInput)) isExist = true;
