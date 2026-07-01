@@ -1,12 +1,11 @@
-const CACHE_NAME = 'falk-tracker-v4-pro-cache-v2';
+const CACHE_NAME = 'falk-tracker-v4-pro-cache-v3';
 
 // Daftar file statis lokal yang wajib langsung di-cache saat instalasi
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
+  './icon.png',
 ];
 
 // Event INSTALL: Menyimpan file inti ke dalam Cache Storage
